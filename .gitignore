@@ -1,0 +1,7 @@
+# : comments
+
+# ignore all files in the build/ directory
+deprecated/
+needwork/
+
+
