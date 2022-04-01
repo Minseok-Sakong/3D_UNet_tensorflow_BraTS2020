@@ -12,8 +12,8 @@ from tensorflow.keras.layers import Conv3D, Input, MaxPooling3D, Dropout, concat
 import tensorflow as tf
 import config
 
-def Unet(patch_size, color_type=3, num_classes=1):
-    x= Input(shape=(patch_size, patch_size, patch_size, color_type))
+def Unet(patch_size, num_channels=3, num_classes=1):
+    x= Input(shape=(patch_size, patch_size, patch_size, num_channels))
     conv1 = Conv3D(32, 3, activation = 'relu', padding = 'same',data_format="channels_last")(x)
     conv1 = Conv3D(32, 3, activation = 'relu', padding = 'same')(conv1)
     pool1 = MaxPooling3D(pool_size=(2, 2, 2))(conv1)
@@ -57,5 +57,5 @@ def Unet(patch_size, color_type=3, num_classes=1):
     return model
 
 if __name__=='__main__':
-    model = Unet(patch_size=64,color_type=3,num_classes=4)
+    model = Unet(patch_size=64,num_channels=3,num_classes=4)
     print(model.summary())

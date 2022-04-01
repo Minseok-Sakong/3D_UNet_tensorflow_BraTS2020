@@ -142,7 +142,7 @@ def ResPath(filters, length, inp):
     return out
 
 
-def MultiResUnet3D(patch_size=64,color_type=3,num_classes=4):
+def MultiResUnet3D(patch_size=64,num_channels=3,num_classes=4):
     '''
     MultiResUNet3D
     
@@ -151,7 +151,7 @@ def MultiResUnet3D(patch_size=64,color_type=3,num_classes=4):
     '''
 
 
-    inputs = Input((patch_size, patch_size, patch_size, color_type))
+    inputs = Input((patch_size, patch_size, patch_size, num_channels))
 
     mresblock1 = MultiResBlock(32, inputs) 
     pool1 = MaxPooling3D(pool_size=(2, 2, 2))(mresblock1)
@@ -192,5 +192,5 @@ def MultiResUnet3D(patch_size=64,color_type=3,num_classes=4):
 
 
 if __name__ == '__main__':
-    model = MultiResUnet3D(patch_size=64,color_type=3,num_classes=4)
+    model = MultiResUnet3D(patch_size=64,num_channels=3,num_classes=4)
     print(model.summary())

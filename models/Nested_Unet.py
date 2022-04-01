@@ -46,7 +46,7 @@ def standard_unit(input_tensor, stage, nb_filter, kernel_size=3):
 
 ########################################
 
-def Nested_Unet(patch_size, color_type=3, num_classes=1, deep_supervision=False):
+def Nested_Unet(patch_size, num_channels=3, num_classes=1, deep_supervision=False):
 
     nb_filter = [32,64,128,256,512]
     act = 'elu'
@@ -55,7 +55,7 @@ def Nested_Unet(patch_size, color_type=3, num_classes=1, deep_supervision=False)
     global bn_axis
     
     bn_axis = -1
-    img_input = Input(shape=(patch_size, patch_size, patch_size, color_type), name='main_input')
+    img_input = Input(shape=(patch_size, patch_size, patch_size, num_channels), name='main_input')
     
     conv1_1 = standard_unit(img_input, stage='11', nb_filter=nb_filter[0])
     pool1 = MaxPooling3D((2, 2, 2), strides=(2, 2, 2), name='pool1')(conv1_1)
@@ -127,5 +127,5 @@ def Nested_Unet(patch_size, color_type=3, num_classes=1, deep_supervision=False)
     return model
 
 if __name__=='__main__':
-    model = Nested_Unet(patch_size=64,color_type=3,num_classes=4)
+    model = Nested_Unet(patch_size=64,num_channels=3,num_classes=4)
     print(model.summary())
