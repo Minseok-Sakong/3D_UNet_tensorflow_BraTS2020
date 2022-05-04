@@ -14,12 +14,17 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.optimizers import Adam
 import utils.extra as extra
 from dataloader import DataSet_random
-from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
+from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping, ModelCheckpoint
 from models.MultiRes_Unet import MultiResUnet3D, dice_coefficient_loss
+from models.Nested_Unet import Nested_Unet
 import os
 import config
-
-
+'''
+configproto = tf.compat.v1.ConfigProto() 
+configproto.gpu_options.allow_growth = True
+sess = tf.compat.v1.Session(config=configproto) 
+tf.compat.v1.keras.backend.set_session(sess)
+'''
 data_df = extra.prepare_dataframe("/projectnb/bil/Minseok/test/dataset/combined/")
 
 brain_filenames = data_df['image'].values
@@ -35,20 +40,26 @@ brain_tr, brain_val, mask_tr, mask_val = train_test_split(brain_filenames, mask_
 iou_score = tf.keras.metrics.MeanIoU(num_classes=n_classes)
 metrics = [iou_score]
 
-tr_ds = DataSet_random(brain_tr, mask_tr, 4,True, None)
-val_ds = DataSet_random(brain_val, mask_val, 4,True, None)
+tr_ds = DataSet_random(brain_tr, mask_tr, 1,True, None)
+val_ds = DataSet_random(brain_val, mask_val, 1, False, None)
 rlr_cb = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=8, mode='min',verbose=1)
 ely_cb = EarlyStopping(monitor='val_loss', patience=15, mode='min', verbose=1)
 #ds_all = DataSet(brain_filenames, mask_filenames, 1, None, True, preprocess_input)
-model = MultiResUnet3D(patch_size=patch_size,num_channels=channels,num_classes=n_classes)
+model = Nested_Unet(patch_size=patch_size,num_channels=channels,num_classes=n_classes)
 model.compile(optimizer = optim, loss=dice_coefficient_loss, metrics=metrics)
-
+model_checkpoint_callback = ModelCheckpoint(
+    filepath="/projectnb/bil/Minseok/test/model_weights/{epoch:02d}-{val_loss:.2f}.hdf5",
+    save_weights_only=True,
+    monitor='val_loss',
+    mode='min',
+    save_best_only=True)
 history=model.fit(tr_ds,
-            epochs=100,
+            epochs=1000,
             verbose=1,
             validation_data=val_ds,
-            callbacks=([rlr_cb,ely_cb]))
-model.save("/projectnb/bil/Minseok/model_weights/unetplus_100epochs_adni.h5")
+            callbacks=([rlr_cb,ely_cb,model_checkpoint_callback]),
+            )
+model.save("/projectnb/bil/Minseok/test/model_weights/final_model.h5")
 
 loss = history.history['loss']
 val_loss = history.history['val_loss']

@@ -80,14 +80,14 @@ class DataSet_random(Sequence):
 		mask = np.load(mask_name_batch)
 		# standardize/normalize image intensity value
 		if self.pre_func is not None:
-			new_image = self.pre_func(image)
+			image = self.pre_func(image)
 		else:
-			new_image = image
+			image = image
 
 		#Input image file is a 3D image
-		x = new_image.shape[0]
-		y = new_image.shape[1]
-		z = new_image.shape[2]
+		x = image.shape[0]
+		y = image.shape[1]
+		z = image.shape[2]
 		cnt = 0
 
 		while cnt < self.batch_size:
@@ -95,8 +95,8 @@ class DataSet_random(Sequence):
 			rand_y = random.randint(0, y - PATCH_SIZE - 1)
 			rand_z = random.randint(0, z - PATCH_SIZE - 1)
 
-			new_brain = np.zeros(shape=(PATCH_SIZE, PATCH_SIZE, PATCH_SIZE))
-			new_brain = new_image[rand_x:rand_x + PATCH_SIZE, rand_y:rand_y + PATCH_SIZE, rand_z:rand_z + PATCH_SIZE]
+			new_brain = np.zeros(shape=(PATCH_SIZE, PATCH_SIZE, PATCH_SIZE,channel_nums))
+			new_brain = image[rand_x:rand_x + PATCH_SIZE, rand_y:rand_y + PATCH_SIZE, rand_z:rand_z + PATCH_SIZE,:]
 			new_mask = np.zeros(shape=(PATCH_SIZE, PATCH_SIZE, PATCH_SIZE))
 			new_mask = mask[rand_x:rand_x + PATCH_SIZE, rand_y:rand_y + PATCH_SIZE, rand_z:rand_z + PATCH_SIZE]
 			# Background pixel value = 0
@@ -107,11 +107,10 @@ class DataSet_random(Sequence):
 			if (background_percentage > 0.90):
 				continue
 			else:
-				train_brain = new_brain
 				train_mask = np.expand_dims(new_mask, axis=3)
 				train_mask_cat = to_categorical(train_mask, num_classes=num_classes)
 
-				brain_batch[cnt] = train_brain
+				brain_batch[cnt] = new_brain
 				mask_batch[cnt] = train_mask_cat
 				cnt += 1
 
@@ -127,8 +126,14 @@ if __name__ =='__main__':
     data_df = prepare_dataframe("/projectnb/bil/Minseok/test/dataset/combined/")
     brain_filenames = data_df['image'].values
     mask_filenames = data_df['mask'].values
-    tr_ds = DataSet_random(brain_filenames, mask_filenames, 4, True, None)
+    tr_ds = DataSet_random(brain_filenames, mask_filenames, 1, True, None)
     batch = next(iter(tr_ds))
+    image = batch[0]
+    mask = batch[1]
+    plt.figure(figsize=(16, 12))
+    plt.subplot(231)
+    plt.title('Original Brain')
+    plt.imshow(image[0,:,32,:,2], cmap='gray')
     '''
     data_df = make_dataframe_adni_random()
 

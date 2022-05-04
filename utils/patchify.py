@@ -96,7 +96,7 @@ def unpatchify(input_arr:np.ndarray, location_list: dict, orig_size:int,patch_si
 if __name__=='__main__':
     #Testing Purpose
     
-    test = np.ones((10,10,10))
+    test = np.array(range(0,1000)).reshape(10,10,10)
     one, two = patchify(test,5,3)
     oone = np.array(one)
     orig = unpatchify(oone,two,10,5,0)
