@@ -17,10 +17,9 @@ from tensorflow.keras.utils import Sequence
 import sklearn
 from sklearn.preprocessing import MinMaxScaler
 import random
-from volumentations import *
-from utils.extra import make_dataframe_adni_random
 import matplotlib.pyplot as plt
 import config
+from utils.extra import prepare_dataframe
 
 PATCH_SIZE = config.PATCH_SIZE
 num_classes = config.NUM_CLASSES
@@ -67,18 +66,23 @@ class DataSet_random(Sequence):
 		brain_name_batch = self.brain_filenames[index]
 		if self.mask_filenames is not None:
 			mask_name_batch = self.mask_filenames[index]
-
 		# channel_nums depends on the input image. Ex) RGB image: channel_nums=3, Grayscale image: channel_nums=1
 		brain_batch = np.zeros((self.batch_size, PATCH_SIZE, PATCH_SIZE, PATCH_SIZE, channel_nums), dtype='float32')
 		mask_batch = np.zeros((self.batch_size, PATCH_SIZE, PATCH_SIZE, PATCH_SIZE, num_classes), dtype='float32')
 
 		# load nifti files to numpy arrays
+		'''
 		image = np.array(nib.load(brain_name_batch).get_fdata())
 		mask = np.array(nib.load(mask_name_batch).get_fdata())
-
+		'''
+		# load numpy array files
+		image = np.load(brain_name_batch)
+		mask = np.load(mask_name_batch)
 		# standardize/normalize image intensity value
 		if self.pre_func is not None:
 			new_image = self.pre_func(image)
+		else:
+			new_image = image
 
 		#Input image file is a 3D image
 		x = new_image.shape[0]
@@ -103,7 +107,7 @@ class DataSet_random(Sequence):
 			if (background_percentage > 0.90):
 				continue
 			else:
-				train_brain = np.stack((new_brain,) * channel_nums, axis=-1)
+				train_brain = new_brain
 				train_mask = np.expand_dims(new_mask, axis=3)
 				train_mask_cat = to_categorical(train_mask, num_classes=num_classes)
 
@@ -120,6 +124,12 @@ class DataSet_random(Sequence):
 			pass
 
 if __name__ =='__main__':
+    data_df = prepare_dataframe("/projectnb/bil/Minseok/test/dataset/combined/")
+    brain_filenames = data_df['image'].values
+    mask_filenames = data_df['mask'].values
+    tr_ds = DataSet_random(brain_filenames, mask_filenames, 4, True, None)
+    batch = next(iter(tr_ds))
+    '''
     data_df = make_dataframe_adni_random()
 
     brain_filenames = data_df['brain_paths'].values
@@ -137,6 +147,7 @@ if __name__ =='__main__':
     plt.title('Original Mask')
     plt.imshow(mask[0,:,32,:])
     plt.show()
+    '''
 
 
 

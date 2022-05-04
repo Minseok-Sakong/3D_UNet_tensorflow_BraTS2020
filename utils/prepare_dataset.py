@@ -46,8 +46,30 @@ def prepare_dataset(data_path,output_path):
                 #Save combined numpy array as npy file
                 np.save(output_path+'/'+subj_name+'_combined.npy',combined)
                 print('Processed '+subj_name)
+                
+def prepare_mask_dataset(data_path,output_path):
+    '''
+    Preprocess the mask file
+    -> organize missing labels (label 3)
+    '''
+    
+    
+    for dirname, _, filenames in os.walk(data_path):
+        for filename in filenames:
+            if 't1.nii' in filename:
+                subj_name = filename[-10:-7]
+                mask_path = dirname+'/'+'BraTS20_Training_'+subj_name+'_seg.nii'
+                mask = np.array(nib.load(mask_path).get_fdata())
+                #Original : 0:unlabeled 1:NCR/NET 2:ED 3: Missing 4:ET
+                #Changed : 0:unlabeled 1:NCR/NET 2:ED 3: ET
+                mask = np.where(mask==4,3,mask)
+                np.save(output_path+'/'+subj_name+'_mask.npy',mask)
+                print('Processed '+subj_name)
 
 if __name__=='__main__':
     data_path = '/projectnb/bil/Minseok/test/dataset/BraTS2020_TrainingData/'
     output_path = '/projectnb/bil/Minseok/test/dataset/combined'
-    prepare_dataset(data_path,output_path)
+    output_mask_path = '/projectnb/bil/Minseok/test/dataset/combined_mask'
+    #prepare_dataset(data_path,output_path)
+    prepare_mask_dataset(data_path,output_mask_path)
+    

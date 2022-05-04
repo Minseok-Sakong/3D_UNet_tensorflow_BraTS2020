@@ -8,6 +8,28 @@ Created on Fri Feb  4 14:27:27 2022
 Multi-Res Unet
 : https://arxiv.org/pdf/1902.04049.pdf
 """
+from tensorflow.keras import backend as K
+
+#-----------------------------------------------------#
+#              Standard Dice coefficient              #
+#-----------------------------------------------------#
+def dice_coefficient(y_true, y_pred, smooth=0.00001):
+    """Dice loss originates from SørensenDice coefficient, which is a statistic developed in 1940s to gauge the similarity between two samples.
+    Variant: Over all pixels
+    Credits documentation: https://github.com/mlyg
+    Parameters
+    ----------
+    smooth : float, optional
+        smoothing constant to prevent division by zero errors, by default 0.000001
+    """
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / \
+           (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+
+def dice_coefficient_loss(y_true, y_pred):
+    return 1-dice_coefficient(y_true, y_pred)
 
 from tensorflow.keras.layers import Input, Conv3D, MaxPooling3D, Conv3DTranspose, concatenate, BatchNormalization, Activation, add
 from tensorflow.keras.models import Model, model_from_json
