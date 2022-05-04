@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = empty-project-type
-recent_files = ['models/MultiRes_Unet.py']
+recent_files = ['models/MultiRes_Unet.py', 'models/Nested_Unet.py', 'config.py', 'dataloader.py', 'test.py', 'utils/extra.py', 'utils/prepare_dataset.py', 'needwork/load_predict.py']
 
 [main]
 version = 0.2.0
